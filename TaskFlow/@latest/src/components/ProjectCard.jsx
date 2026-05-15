@@ -1,7 +1,7 @@
 import React from 'react';
 
 const ProjectCard = ({ project, onOpen }) => {
-  const { title, description, tasksCompleted = 0, tasksTotal = 0 } = project;
+  const { title, description, repository, tasksCompleted = 0, tasksTotal = 0 } = project;
   const progress = tasksTotal > 0 ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
 
   const progressColor =
@@ -34,6 +34,22 @@ const ProjectCard = ({ project, onOpen }) => {
         {description || 'No description provided.'}
       </p>
 
+      {/* Repository */}
+      {repository && (
+        <a
+          href={repository}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 hover:underline truncate"
+        >
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+          {repository.replace(/^https?:\/\//, '')}
+        </a>
+      )}
+
       {/* Progress */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between text-xs font-medium">
@@ -53,15 +69,17 @@ const ProjectCard = ({ project, onOpen }) => {
       <div className="border-t border-gray-100" />
 
       {/* Open Button */}
-      <button
-        onClick={() => onOpen && onOpen(project)}
-        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+      <a
+        href={repository || '#'}
+        target={repository ? '_blank' : '_self'}
+        rel="noopener noreferrer"
+        className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md ${!repository ? 'opacity-50 pointer-events-none' : ''}`}
       >
         Open Project
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>
-      </button>
+      </a>
 
     </div>
   );

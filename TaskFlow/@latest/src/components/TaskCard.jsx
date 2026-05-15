@@ -19,7 +19,7 @@ const TaskCard = ({ task, onEdit, onDelete }) => {
   const isOverdue = deadline && new Date(deadline) < new Date() && normalizedStatus !== 'done';
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-5 flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
 
       {/* Title & Status */}
       <div className="flex items-start justify-between gap-3">
