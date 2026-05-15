@@ -1,8 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 import './index.css';
 
 function App() {
@@ -13,8 +16,17 @@ function App() {
           <Navbar />
           <main className="flex-1 flex items-start justify-center">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              {/* Login — only public route, redirect to home if already logged in */}
+              <Route path="/login" element={<Login />} />
+
+              {/* All other routes are protected */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+              </Route>
+
+              {/* 404 catch-all */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </div>

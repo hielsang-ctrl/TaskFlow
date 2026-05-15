@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { fetchRepoProgress } from '../services/githubService';
 
 const ProjectCard = ({ project, onOpen }) => {
   const { title, description, repository, tasksCompleted = 0, tasksTotal = 0 } = project;
-  const progress = tasksTotal > 0 ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
 
+  const taskProgress = tasksTotal > 0 ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
+
+  const [commitData, setCommitData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!repository) return;
+    setLoading(true);
+    setError('');
+    fetchRepoProgress(repository)
+      .then((data) => setCommitData(data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [repository]);
+
+  const overallProgress = commitData?.overallProgress ?? taskProgress;
   const progressColor =
-    progress === 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-blue-300';
-
+    overallProgress === 100 ? 'bg-green-500' : overallProgress >= 50 ? 'bg-blue-500' : 'bg-blue-300';
   const statusStyle =
-    progress === 100 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+    overallProgress === 100 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-6 flex flex-col gap-5">
@@ -25,7 +41,7 @@ const ProjectCard = ({ project, onOpen }) => {
           <h3 className="text-base font-semibold text-gray-900 leading-snug">{title}</h3>
         </div>
         <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full ${statusStyle}`}>
-          {progress === 100 ? '✓ Complete' : 'In Progress'}
+          {overallProgress === 100 ? '✓ Complete' : 'In Progress'}
         </span>
       </div>
 
@@ -34,7 +50,7 @@ const ProjectCard = ({ project, onOpen }) => {
         {description || 'No description provided.'}
       </p>
 
-      {/* Repository */}
+      {/* Repository link */}
       {repository && (
         <a
           href={repository}
@@ -50,20 +66,76 @@ const ProjectCard = ({ project, onOpen }) => {
         </a>
       )}
 
-      {/* Progress */}
+      {/* Overall Progress */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between text-xs font-medium">
-          <span className="text-gray-500">Progress</span>
-          <span className="text-gray-800">{progress}%</span>
+          <span className="text-gray-500">Overall Progress</span>
+          <span className="text-gray-800">{overallProgress}%</span>
         </div>
         <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
           <div
             className={`h-2 rounded-full transition-all duration-500 ${progressColor}`}
-            style={{ width: `${progress}%` }}
+            style={{ width: `${overallProgress}%` }}
           />
         </div>
-        <p className="text-xs text-gray-400">{tasksCompleted} of {tasksTotal} tasks completed</p>
+        {commitData ? (
+          <p className="text-xs text-gray-400">{commitData.totalCommits} total commits</p>
+        ) : (
+          <p className="text-xs text-gray-400">{tasksCompleted} of {tasksTotal} tasks completed</p>
+        )}
       </div>
+
+      {/* Collaborator Breakdown */}
+      {loading && (
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <svg className="w-3.5 h-3.5 animate-spin text-blue-400" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          Fetching commit data...
+        </div>
+      )}
+
+      {error && (
+        <p className="text-xs text-red-400">{error}</p>
+      )}
+
+      {commitData && commitData.collaborators.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-4 rounded-full bg-gradient-to-b from-green-500 to-blue-500 inline-block" />
+            <span className="text-xs font-semibold text-gray-700">Collaborator Contributions</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {commitData.collaborators.map((c) => (
+              <div key={c.login} className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {c.avatar ? (
+                      <img src={c.avatar} alt={c.login} className="w-5 h-5 rounded-full border border-gray-200" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-400 to-blue-400 flex items-center justify-center text-white text-xs font-bold">
+                        {c.login.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-xs text-gray-700 font-medium">{c.login}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>{c.commits} commits</span>
+                    <span className="font-semibold text-gray-700">{c.percentage}%</span>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="h-1.5 rounded-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-500"
+                    style={{ width: `${c.percentage}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Divider */}
       <div className="border-t border-gray-100" />
