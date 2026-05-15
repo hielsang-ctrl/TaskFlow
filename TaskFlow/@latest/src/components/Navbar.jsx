@@ -102,7 +102,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Hamburger */}
+          {/* Mobile Menu */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
