@@ -9,4 +9,14 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/tests/setup.js',
+    coverage: {
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/main.jsx', 'src/firebase.js'],
+    },
+  },
 })

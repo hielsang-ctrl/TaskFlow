@@ -87,8 +87,11 @@ const ProjectDetails = ({ task, onChange }) => {
         </svg>
       </button>
 
-      {open && (
-        <div className="flex flex-col gap-4 pb-4">
+      <div
+        className={`flex flex-col gap-4 overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-[600px] opacity-100 pb-4' : 'max-h-0 opacity-0'
+        }`}
+      >
 
           {/* Requirements */}
           <div className="flex flex-col gap-1">
@@ -163,9 +166,7 @@ const ProjectDetails = ({ task, onChange }) => {
               </div>
             ))}
           </div>
-
-        </div>
-      )}
+      </div>
     </div>
   );
 };

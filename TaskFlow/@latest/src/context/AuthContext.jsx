@@ -6,41 +6,23 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db, googleProvider, githubProvider } from '../firebase';
+import { auth, googleProvider, githubProvider } from '../firebase';
 
 export const AuthContext = createContext(null);
-
-// Save or update user profile in Firestore
-const saveUserProfile = async (firebaseUser, extra = {}) => {
-  const ref = doc(db, 'users', firebaseUser.uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      displayName: firebaseUser.displayName ?? extra.displayName ?? '',
-      avatar: firebaseUser.photoURL ?? '',
-      provider: firebaseUser.providerData[0]?.providerId ?? 'password',
-      createdAt: serverTimestamp(),
-    });
-  }
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch full profile from Firestore
-        const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
-        setUser(snap.exists() ? snap.data() : {
+        setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName ?? '',
           avatar: firebaseUser.photoURL ?? '',
+          provider: firebaseUser.providerData[0]?.providerId ?? 'password',
         });
       } else {
         setUser(null);
@@ -52,8 +34,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password) => {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await saveUserProfile(result.user);
+      await createUserWithEmailAndPassword(auth, email, password);
       return { success: true };
     } catch (err) {
       const messages = {
@@ -82,8 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   const socialLogin = async (provider) => {
     const providerInstance = provider === 'google' ? googleProvider : githubProvider;
-    const result = await signInWithPopup(auth, providerInstance);
-    await saveUserProfile(result.user);
+    await signInWithPopup(auth, providerInstance);
   };
 
   const logout = async () => {
