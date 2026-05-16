@@ -1,24 +1,32 @@
 import { useState, useContext } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
-  const { user, setUser } = useContext(AuthContext);
+  const { user, login, register } = useContext(AuthContext);
   const navigate = useNavigate();
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
-  // Already logged in — go straight to home
   if (user) return <Navigate to="/" replace />;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     if (!form.email || !form.password) { setError('All fields are required.'); return; }
-    setUser({ email: form.email });
-    navigate('/dashboard');
+
+    if (mode === 'signup') {
+      if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+      const result = await register(form.email, form.password);
+      if (result.error) { setError(result.error); return; }
+    } else {
+      const result = await login(form.email, form.password);
+      if (result.error) { setError(result.error); return; }
+    }
+    navigate('/');
   };
 
   return (
@@ -81,6 +89,7 @@ const Login = () => {
               className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-300 transition"
             />
           </div>
+
           <button
             type="submit"
             className="w-full py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
@@ -99,6 +108,24 @@ const Login = () => {
             {mode === 'login' ? 'Sign Up' : 'Log In'}
           </button>
         </p>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 border-t border-gray-100" />
+          <span className="text-xs text-gray-400">or</span>
+          <div className="flex-1 border-t border-gray-100" />
+        </div>
+
+        {/* Social Auth Link */}
+        <Link
+          to="/social-auth"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Continue with GitHub or Google
+        </Link>
 
       </div>
     </div>

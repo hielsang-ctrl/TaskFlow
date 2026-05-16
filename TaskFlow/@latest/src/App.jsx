@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import SocialAuth from './pages/SocialAuth';
 import NotFound from './pages/NotFound';
 import './index.css';
 
@@ -18,6 +19,7 @@ function App() {
             <Routes>
               {/* Login — only public route, redirect to home if already logged in */}
               <Route path="/login" element={<Login />} />
+              <Route path="/social-auth" element={<SocialAuth />} />
 
               {/* All other routes are protected */}
               <Route element={<ProtectedRoute />}>
