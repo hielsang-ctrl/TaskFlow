@@ -10,6 +10,10 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+if (!firebaseConfig.apiKey) {
+  console.error('Firebase env vars are missing. Check your GitHub Secrets or .env file.');
+}
+
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
