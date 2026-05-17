@@ -12,7 +12,7 @@ import './index.css';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <div className="min-h-screen flex flex-col bg-slate-50">
           <Navbar />
           <main className="flex-1 flex items-start justify-center">
